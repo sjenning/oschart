@@ -1,0 +1,9 @@
+package: github.com/sjenning/oschart
+import:
+- package: github.com/golang/glog
+- package: github.com/pkg/errors
+  version: v0.8.0
+- package: github.com/spf13/cobra
+  version: v0.0.3
+- package: github.com/spf13/pflag
+- package: github.com/openshift/client-go
