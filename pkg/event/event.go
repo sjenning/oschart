@@ -10,6 +10,7 @@ import (
 )
 
 type event struct {
+	value       string
 	description string
 	timestamp   time.Time
 }
@@ -20,7 +21,7 @@ type store struct {
 }
 
 type Store interface {
-	Add(group, label, value string)
+	Add(group, label, value, extended string)
 	JSONHandler(w http.ResponseWriter, r *http.Request)
 }
 
@@ -28,7 +29,7 @@ func NewStore() Store {
 	return &store{events: map[string]map[string][]event{}}
 }
 
-func (s *store) Add(group, label, value string) {
+func (s *store) Add(group, label, value, description string) {
 	s.Lock()
 	defer s.Unlock()
 	groupevents, ok := s.events[group]
@@ -37,8 +38,8 @@ func (s *store) Add(group, label, value string) {
 		groupevents, _ = s.events[group]
 	}
 	labelevents, ok := groupevents[label]
-	if !ok || labelevents[len(labelevents)-1].description != value {
-		event := event{value, time.Now()}
+	if !ok || labelevents[len(labelevents)-1].value != value {
+		event := event{value: value, description: description, timestamp: time.Now()}
 		glog.Infof("adding event for %s/%s: %#v", group, label, event)
 		groupevents[label] = append(groupevents[label], event)
 	} else {
@@ -48,7 +49,8 @@ func (s *store) Add(group, label, value string) {
 
 type LabelData struct {
 	TimeRange [2]time.Time `json:"timeRange,omitempty"`
-	Val       string       `json:"val"`
+	Val       string       `json:"val,omitempty"`
+	Extended  string       `json:"extended,omitempty"`
 }
 
 type GroupData struct {
@@ -68,7 +70,7 @@ func (s *store) JSONHandler(w http.ResponseWriter, r *http.Request) {
 		for label, events := range labels {
 			gd := GroupData{Label: label}
 			for i, event := range events {
-				ld := LabelData{TimeRange: [2]time.Time{event.timestamp, time.Now()}, Val: event.description}
+				ld := LabelData{TimeRange: [2]time.Time{event.timestamp, time.Now()}, Val: event.value, Extended: event.description}
 				gd.Data = append(gd.Data, ld)
 				if i > 0 {
 					gd.Data[i-1].TimeRange[1] = event.timestamp

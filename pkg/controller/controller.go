@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -138,10 +139,11 @@ func (c *Controller) syncHandler(key string) error {
 
 	// co is added or updated
 	for _, condition := range co.Status.Conditions {
+		data, _ := json.MarshalIndent(co, "", "  ")
 		if condition.Status == configv1.ConditionFalse {
-			c.eventStore.Add(co.GetName(), string(condition.Type), "False")
+			c.eventStore.Add(co.GetName(), string(condition.Type), "False", string(data))
 		} else {
-			c.eventStore.Add(co.GetName(), string(condition.Type), string(condition.Type))
+			c.eventStore.Add(co.GetName(), string(condition.Type), string(condition.Type), string(data))
 		}
 	}
 
