@@ -138,12 +138,12 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	// co is added or updated
+	data, _ := json.MarshalIndent(co, "", "  ")
 	for _, condition := range co.Status.Conditions {
-		data, _ := json.MarshalIndent(co, "", "  ")
-		if condition.Status == configv1.ConditionFalse {
-			c.eventStore.Add(co.GetName(), string(condition.Type), "False", string(data))
-		} else {
+		if condition.Status == configv1.ConditionTrue {
 			c.eventStore.Add(co.GetName(), string(condition.Type), string(condition.Type), string(data))
+		} else {
+			c.eventStore.Add(co.GetName(), string(condition.Type), string(condition.Status), string(data))
 		}
 	}
 
