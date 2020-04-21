@@ -1,9 +1,7 @@
 # oschart
-Bootchart for Kubernetes Pods
+Bootchart for OpenShift Cluster Operators
 
 ![OSChart](https://raw.githubusercontent.com/sjenning/oschart/master/oschart.png)
-
-[OSChart 1.0 Demo](https://www.youtube.com/watch?v=AVo6DeOI4_U)
 
 ## Building
 
