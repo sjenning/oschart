@@ -22,6 +22,7 @@ type store struct {
 
 type Store interface {
 	Add(group, label, value, extended string)
+	AddAtTime(group, label, value, extended string, instant time.Time)
 	JSONHandler(w http.ResponseWriter, r *http.Request)
 }
 
@@ -30,6 +31,10 @@ func NewStore() Store {
 }
 
 func (s *store) Add(group, label, value, description string) {
+	s.AddAtTime(group, label, value, description, time.Now())
+}
+
+func (s *store) AddAtTime(group, label, value, description string, instant time.Time) {
 	s.Lock()
 	defer s.Unlock()
 	groupevents, ok := s.events[group]
@@ -39,7 +44,7 @@ func (s *store) Add(group, label, value, description string) {
 	}
 	labelevents, ok := groupevents[label]
 	if !ok || labelevents[len(labelevents)-1].value != value {
-		event := event{value: value, description: description, timestamp: time.Now()}
+		event := event{value: value, description: description, timestamp: instant}
 		glog.Infof("adding event for %s/%s: %#v", group, label, event)
 		groupevents[label] = append(groupevents[label], event)
 	} else {
