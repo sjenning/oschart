@@ -17,7 +17,7 @@ Set your `KUBECONFIG` appropriately or using the `--kubeconfig` flag to pass it 
 ./oschart
 ```
 
-Then open up http://localhost:3000 to see the OSChart.
+Then open up http://localhost:3001 to see the OSChart.
 
 If it doesn't work, add `--logtostderr` to the flag to get more verbose logging.
 
@@ -25,7 +25,7 @@ If it doesn't work, add `--logtostderr` to the flag to get more verbose logging.
 
 ```
 cd static
-curl -OL http://localhost:3000/data.json
+curl -OL http://localhost:3001/data.json
 ```
 
 To view the data, launch a simple python webserver in the `static` directory
