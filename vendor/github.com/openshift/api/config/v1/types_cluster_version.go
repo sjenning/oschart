@@ -16,9 +16,12 @@ type ClusterVersion struct {
 
 	// spec is the desired state of the cluster version - the operator will work
 	// to ensure that the desired version is applied to the cluster.
+	// +kubebuilder:validation:Required
+	// +required
 	Spec ClusterVersionSpec `json:"spec"`
 	// status contains information about the available updates and any in-progress
 	// updates.
+	// +optional
 	Status ClusterVersionStatus `json:"status"`
 }
 
@@ -30,6 +33,8 @@ type ClusterVersionSpec struct {
 	// clusterID uniquely identifies this cluster. This is expected to be
 	// an RFC4122 UUID value (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx in
 	// hexadecimal values). This is a required field.
+	// +kubebuilder:validation:Required
+	// +required
 	ClusterID ClusterID `json:"clusterID"`
 
 	// desiredUpdate is an optional field that indicates the desired value of
@@ -46,19 +51,19 @@ type ClusterVersionSpec struct {
 	// rollbacks will succeed.
 	//
 	// +optional
-	DesiredUpdate *Update `json:"desiredUpdate"`
+	DesiredUpdate *Update `json:"desiredUpdate,omitempty"`
 
 	// upstream may be used to specify the preferred update server. By default
 	// it will use the appropriate update server for the cluster and region.
 	//
 	// +optional
-	Upstream URL `json:"upstream"`
+	Upstream URL `json:"upstream,omitempty"`
 	// channel is an identifier for explicitly requesting that a non-default
 	// set of updates be applied to this cluster. The default channel will be
 	// contain stable updates that are appropriate for production clusters.
 	//
 	// +optional
-	Channel string `json:"channel"`
+	Channel string `json:"channel,omitempty"`
 
 	// overrides is list of overides for components that are managed by
 	// cluster version operator. Marking a component unmanaged will prevent
@@ -77,7 +82,9 @@ type ClusterVersionStatus struct {
 	// desired is the version that the cluster is reconciling towards.
 	// If the cluster is not yet fully initialized desired will be set
 	// with the information available, which may be an image or a tag.
-	Desired Update `json:"desired"`
+	// +kubebuilder:validation:Required
+	// +required
+	Desired Release `json:"desired"`
 
 	// history contains a list of the most recent versions applied to the cluster.
 	// This value may be empty during cluster startup, and then will be updated
@@ -86,32 +93,41 @@ type ClusterVersionStatus struct {
 	// Completed if the rollout completed - if an update was failing or halfway
 	// applied the state will be Partial. Only a limited amount of update history
 	// is preserved.
-	History []UpdateHistory `json:"history"`
+	// +optional
+	History []UpdateHistory `json:"history,omitempty"`
 
 	// observedGeneration reports which version of the spec is being synced.
 	// If this value is not equal to metadata.generation, then the desired
-	// and conditions fields may represent from a previous version.
+	// and conditions fields may represent a previous version.
+	// +kubebuilder:validation:Required
+	// +required
 	ObservedGeneration int64 `json:"observedGeneration"`
 
 	// versionHash is a fingerprint of the content that the cluster will be
 	// updated with. It is used by the operator to avoid unnecessary work
 	// and is for internal use only.
+	// +kubebuilder:validation:Required
+	// +required
 	VersionHash string `json:"versionHash"`
 
 	// conditions provides information about the cluster version. The condition
 	// "Available" is set to true if the desiredUpdate has been reached. The
 	// condition "Progressing" is set to true if an update is being applied.
-	// The condition "Failing" is set to true if an update is currently blocked
+	// The condition "Degraded" is set to true if an update is currently blocked
 	// by a temporary or permanent error. Conditions are only valid for the
 	// current desiredUpdate when metadata.generation is equal to
 	// status.generation.
-	Conditions []ClusterOperatorStatusCondition `json:"conditions"`
+	// +optional
+	Conditions []ClusterOperatorStatusCondition `json:"conditions,omitempty"`
 
 	// availableUpdates contains the list of updates that are appropriate
 	// for this cluster. This list may be empty if no updates are recommended,
 	// if the update service is unavailable, or if an invalid channel has
 	// been specified.
-	AvailableUpdates []Update `json:"availableUpdates"`
+	// +nullable
+	// +kubebuilder:validation:Required
+	// +required
+	AvailableUpdates []Release `json:"availableUpdates"`
 }
 
 // UpdateState is a constant representing whether an update was successfully
@@ -133,14 +149,21 @@ type UpdateHistory struct {
 	// indicates the update is not fully applied, while the Completed state
 	// indicates the update was successfully rolled out at least once (all
 	// parts of the update successfully applied).
+	// +kubebuilder:validation:Required
+	// +required
 	State UpdateState `json:"state"`
 
 	// startedTime is the time at which the update was started.
+	// +kubebuilder:validation:Required
+	// +required
 	StartedTime metav1.Time `json:"startedTime"`
 	// completionTime, if set, is when the update was fully applied. The update
 	// that is currently being applied will have a null completion time.
 	// Completion time will always be set for entries that are not the current
 	// update (usually to the started time of the next update).
+	// +kubebuilder:validation:Required
+	// +required
+	// +nullable
 	CompletionTime *metav1.Time `json:"completionTime"`
 
 	// version is a semantic versioning identifying the update version. If the
@@ -151,7 +174,14 @@ type UpdateHistory struct {
 	Version string `json:"version"`
 	// image is a container image location that contains the update. This value
 	// is always populated.
+	// +kubebuilder:validation:Required
+	// +required
 	Image string `json:"image"`
+	// verified indicates whether the provided update was properly verified
+	// before it was installed. If this is false the cluster may not be trusted.
+	// +kubebuilder:validation:Required
+	// +required
+	Verified bool `json:"verified"`
 }
 
 // ClusterID is string RFC4122 uuid.
@@ -162,27 +192,36 @@ type ClusterID string
 // +k8s:deepcopy-gen=true
 type ComponentOverride struct {
 	// kind indentifies which object to override.
+	// +kubebuilder:validation:Required
+	// +required
 	Kind string `json:"kind"`
 	// group identifies the API group that the kind is in.
+	// +kubebuilder:validation:Required
+	// +required
 	Group string `json:"group"`
 
 	// namespace is the component's namespace. If the resource is cluster
 	// scoped, the namespace should be empty.
+	// +kubebuilder:validation:Required
+	// +required
 	Namespace string `json:"namespace"`
 	// name is the component's name.
+	// +kubebuilder:validation:Required
+	// +required
 	Name string `json:"name"`
 
 	// unmanaged controls if cluster version operator should stop managing the
 	// resources in this cluster.
 	// Default: false
+	// +kubebuilder:validation:Required
+	// +required
 	Unmanaged bool `json:"unmanaged"`
 }
 
 // URL is a thin wrapper around string that ensures the string is a valid URL.
 type URL string
 
-// Update represents a release of the ClusterVersionOperator, referenced by the
-// Image member.
+// Update represents an administrator update request.
 // +k8s:deepcopy-gen=true
 type Update struct {
 	// version is a semantic versioning identifying the update version. When this
@@ -196,6 +235,47 @@ type Update struct {
 	//
 	// +optional
 	Image string `json:"image"`
+	// force allows an administrator to update to an image that has failed
+	// verification, does not appear in the availableUpdates list, or otherwise
+	// would be blocked by normal protections on update. This option should only
+	// be used when the authenticity of the provided image has been verified out
+	// of band because the provided image will run with full administrative access
+	// to the cluster. Do not use this flag with images that comes from unknown
+	// or potentially malicious sources.
+	//
+	// This flag does not override other forms of consistency checking that are
+	// required before a new update is deployed.
+	//
+	// +optional
+	Force bool `json:"force"`
+}
+
+// Release represents an OpenShift release image and associated metadata.
+// +k8s:deepcopy-gen=true
+type Release struct {
+	// version is a semantic versioning identifying the update version. When this
+	// field is part of spec, version is optional if image is specified.
+	// +required
+	Version string `json:"version"`
+
+	// image is a container image location that contains the update. When this
+	// field is part of spec, image is optional if version is specified and the
+	// availableUpdates field contains a matching version.
+	// +required
+	Image string `json:"image"`
+
+	// url contains information about this release. This URL is set by
+	// the 'url' metadata property on a release or the metadata returned by
+	// the update API and should be displayed as a link in user
+	// interfaces. The URL field may not be set for test or nightly
+	// releases.
+	// +optional
+	URL URL `json:"url,omitempty"`
+
+	// channels is the set of Cincinnati channels to which the release
+	// currently belongs.
+	// +optional
+	Channels []string `json:"channels,omitempty"`
 }
 
 // RetrievedUpdates reports whether available updates have been retrieved from

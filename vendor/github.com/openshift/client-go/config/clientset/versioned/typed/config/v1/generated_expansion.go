@@ -16,7 +16,7 @@ type ConsoleExpansion interface{}
 
 type DNSExpansion interface{}
 
-type FeaturesExpansion interface{}
+type FeatureGateExpansion interface{}
 
 type ImageExpansion interface{}
 
@@ -28,8 +28,10 @@ type NetworkExpansion interface{}
 
 type OAuthExpansion interface{}
 
+type OperatorHubExpansion interface{}
+
 type ProjectExpansion interface{}
 
 type ProxyExpansion interface{}
 
-type SchedulingExpansion interface{}
+type SchedulerExpansion interface{}

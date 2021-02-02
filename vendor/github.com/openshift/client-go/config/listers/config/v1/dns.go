@@ -9,11 +9,14 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-// DNSLister helps list DNSs.
+// DNSLister helps list DNSes.
+// All objects returned here must be treated as read-only.
 type DNSLister interface {
-	// List lists all DNSs in the indexer.
+	// List lists all DNSes in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1.DNS, err error)
 	// Get retrieves the DNS from the index for a given name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1.DNS, error)
 	DNSListerExpansion
 }
@@ -28,7 +31,7 @@ func NewDNSLister(indexer cache.Indexer) DNSLister {
 	return &dNSLister{indexer: indexer}
 }
 
-// List lists all DNSs in the indexer.
+// List lists all DNSes in the indexer.
 func (s *dNSLister) List(selector labels.Selector) (ret []*v1.DNS, err error) {
 	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1.DNS))
