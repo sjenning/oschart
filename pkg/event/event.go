@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 )
 
 type event struct {
@@ -40,10 +40,10 @@ func (s *store) Add(group, label, value, description string) {
 	labelevents, ok := groupevents[label]
 	if !ok || labelevents[len(labelevents)-1].value != value {
 		event := event{value: value, description: description, timestamp: time.Now()}
-		glog.Infof("adding event for %s/%s: %#v", group, label, event)
+		klog.Infof("adding event for %s/%s: %#v", group, label, event)
 		groupevents[label] = append(groupevents[label], event)
 	} else {
-		glog.Infof("duplicate event dropped for %s/%s", group, label)
+		klog.Infof("duplicate event dropped for %s/%s", group, label)
 	}
 }
 

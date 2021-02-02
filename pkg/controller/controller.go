@@ -17,7 +17,7 @@ import (
 
 	"github.com/sjenning/oschart/pkg/event"
 
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 )
 
 type Controller struct {
@@ -57,23 +57,23 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer c.workqueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
-	glog.Info("Starting ClusterOperator controller")
+	klog.Info("Starting ClusterOperator controller")
 
 	// Wait for the caches to be synced before starting workers
-	glog.Info("Waiting for informer caches to sync")
+	klog.Info("Waiting for informer caches to sync")
 	if ok := cache.WaitForCacheSync(stopCh, c.coSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
-	glog.Info("Starting workers")
+	klog.Info("Starting workers")
 	// Launch two workers to process ClusterOperator resources
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
-	glog.Info("Started workers")
+	klog.Info("Started workers")
 	<-stopCh
-	glog.Info("Shutting down workers")
+	klog.Info("Shutting down workers")
 
 	return nil
 }
@@ -109,7 +109,7 @@ func (c *Controller) processNextWorkItem() bool {
 			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
 		}
 		c.workqueue.Forget(obj)
-		glog.Infof("Successfully synced '%s'", key)
+		klog.Infof("Successfully synced '%s'", key)
 		return nil
 	}(obj)
 
@@ -132,7 +132,7 @@ func (c *Controller) syncHandler(key string) error {
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// co is deleted
-			glog.Infof("co %s is deleted", name)
+			klog.Infof("co %s is deleted", name)
 			return nil
 		}
 	}
