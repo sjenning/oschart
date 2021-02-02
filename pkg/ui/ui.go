@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/sjenning/oschart/pkg/event"
+	"k8s.io/klog/v2"
 )
 
 func Run(store event.Store, port uint16) {
@@ -19,6 +19,6 @@ func Run(store event.Store, port uint16) {
 	}
 	r.Handle("/", http.FileServer(http.Dir(fmt.Sprintf("%s/static", path))))
 	r.HandleFunc("/data.json", store.JSONHandler)
-	glog.Infof(fmt.Sprintf("Listening on :%d", port))
-	glog.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
+	klog.Infof(fmt.Sprintf("Listening on :%d", port))
+	klog.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
 }

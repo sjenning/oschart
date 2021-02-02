@@ -3,13 +3,14 @@
 package v1
 
 import (
+	"context"
 	time "time"
 
-	config_v1 "github.com/openshift/api/config/v1"
+	configv1 "github.com/openshift/api/config/v1"
 	versioned "github.com/openshift/client-go/config/clientset/versioned"
 	internalinterfaces "github.com/openshift/client-go/config/informers/externalversions/internalinterfaces"
 	v1 "github.com/openshift/client-go/config/listers/config/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
@@ -40,20 +41,20 @@ func NewInfrastructureInformer(client versioned.Interface, resyncPeriod time.Dur
 func NewFilteredInfrastructureInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
-			ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ConfigV1().Infrastructures().List(options)
+				return client.ConfigV1().Infrastructures().List(context.TODO(), options)
 			},
-			WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ConfigV1().Infrastructures().Watch(options)
+				return client.ConfigV1().Infrastructures().Watch(context.TODO(), options)
 			},
 		},
-		&config_v1.Infrastructure{},
+		&configv1.Infrastructure{},
 		resyncPeriod,
 		indexers,
 	)
@@ -64,7 +65,7 @@ func (f *infrastructureInformer) defaultInformer(client versioned.Interface, res
 }
 
 func (f *infrastructureInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&config_v1.Infrastructure{}, f.defaultInformer)
+	return f.factory.InformerFor(&configv1.Infrastructure{}, f.defaultInformer)
 }
 
 func (f *infrastructureInformer) Lister() v1.InfrastructureLister {

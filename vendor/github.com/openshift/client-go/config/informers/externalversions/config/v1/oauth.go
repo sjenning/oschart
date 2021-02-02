@@ -3,13 +3,14 @@
 package v1
 
 import (
+	"context"
 	time "time"
 
-	config_v1 "github.com/openshift/api/config/v1"
+	configv1 "github.com/openshift/api/config/v1"
 	versioned "github.com/openshift/client-go/config/clientset/versioned"
 	internalinterfaces "github.com/openshift/client-go/config/informers/externalversions/internalinterfaces"
 	v1 "github.com/openshift/client-go/config/listers/config/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
@@ -40,20 +41,20 @@ func NewOAuthInformer(client versioned.Interface, resyncPeriod time.Duration, in
 func NewFilteredOAuthInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
-			ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ConfigV1().OAuths().List(options)
+				return client.ConfigV1().OAuths().List(context.TODO(), options)
 			},
-			WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ConfigV1().OAuths().Watch(options)
+				return client.ConfigV1().OAuths().Watch(context.TODO(), options)
 			},
 		},
-		&config_v1.OAuth{},
+		&configv1.OAuth{},
 		resyncPeriod,
 		indexers,
 	)
@@ -64,7 +65,7 @@ func (f *oAuthInformer) defaultInformer(client versioned.Interface, resyncPeriod
 }
 
 func (f *oAuthInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&config_v1.OAuth{}, f.defaultInformer)
+	return f.factory.InformerFor(&configv1.OAuth{}, f.defaultInformer)
 }
 
 func (f *oAuthInformer) Lister() v1.OAuthLister {
